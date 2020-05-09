@@ -102,6 +102,11 @@ void write(byte *buffer, int i, int value)
 	}
 
 	buffer[i] = signal | value;
+
+#if DEBUG
+	Serial.print("Write: ");
+	Serial.println(buffer[i]);
+#endif
 }
 
 void serviceSensor()
