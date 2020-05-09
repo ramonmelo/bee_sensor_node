@@ -7,6 +7,12 @@
 - https://randomnerdtutorials.com/ttgo-lora32-sx1276-arduino-ide/
 - https://github.com/sandeepmistry/arduino-LoRa/blob/master/API.md
 - https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+- 
+- https://github.com/SensorsIot/Weight-Sensors/blob/master/ESP32_IKEA/ESP32_IKEA.ino
+- https://electronics.stackexchange.com/questions/199487/connect-hx711-to-a-three-wire-load-cell
+
+- https://www.instructables.com/id/ESP32-and-Radio-Lora-10x-More-Powerful/
+- https://create.arduino.cc/projecthub/xreef/lora-e32-for-arduino-esp32-or-esp8266-specs-and-base-use-804d25
 
 ## How to Build
 
