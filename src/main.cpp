@@ -25,13 +25,21 @@
 //915E6 for North America
 #define BAND 915E6
 
-
-
 // Sensors
 
+byte *buffer;
 OneWire oneWire(ONE_WIRE);
-
 std::vector<InovaBee::Sensor *> sensors;
+
+void sendData()
+{
+	//Send LoRa packet to receiver
+	if (LoRa.beginPacket())
+	{
+		LoRa.write(buffer, 4);
+		LoRa.endPacket();
+	}
+}
 
 void setup()
 {
@@ -43,7 +51,13 @@ void setup()
 	sensors.push_back(new InovaBee::SensorDallas(&oneWire));
 	sensors.push_back(new InovaBee::SensorDHT(DHT_PIN));
 
+	// Init buffer
+	byte total = 0;
+	for (unsigned int i = 0; i < sensors.size(); ++i)
+	{
+		total += sensors.at(i)->devices();
 	}
+	buffer = new byte[total];
 
 	//SPI LoRa pins
 	SPI.begin(SCK, MISO, MOSI, SS);
@@ -52,12 +66,40 @@ void setup()
 
 	if (!LoRa.begin(BAND))
 	{
+#if DEBUG
 		Serial.println("Starting LoRa failed!");
+#endif
 		while (1)
-			;
+		{
+			// do nothing
+		}
 	}
+#if DEBUG
 	Serial.println("LoRa Initializing OK!");
+#endif
+
 	delay(2000);
+}
+
+void write(byte *buffer, int i, int value)
+{
+	if (value > 127)
+	{
+		value = 127;
+	}
+	else if (value < -127)
+	{
+		value = -127;
+	}
+
+	byte signal = value <= 0 ? 128 : 0; // if negative, signal on the last bit
+
+	if (value <= 0) // if negative
+	{
+		value = value * -1; // invert signal
+	}
+
+	buffer[i] = signal | value;
 }
 
 void serviceSensor()
@@ -67,9 +109,19 @@ void serviceSensor()
 	Serial.println(millis());
 #endif
 
-	for (unsigned int i = 0; i < sensors.size(); ++i)
+	int position = 0;
+
+	for (size_t i = 0; i < sensors.size(); ++i)
 	{
-		sensors.at(i)->service(0, 0);
+		int devices = sensors.at(i)->devices();
+
+		for (size_t j = 0; j < devices; j++)
+		{
+			int value = sensors.at(i)->service(j); // get value from sensor
+
+			write(buffer, position, value); // write to buffer
+			position++; // advance current position
+		}
 	}
 }
 
