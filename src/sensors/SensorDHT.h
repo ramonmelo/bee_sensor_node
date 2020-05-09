@@ -11,7 +11,8 @@ class SensorDHT : public Sensor
 {
 public:
 	SensorDHT(int pin);
-	int service(long data, int index);
+	int service(int index);
+	int devices();
 
 private:
 	DHT_Unified dht;

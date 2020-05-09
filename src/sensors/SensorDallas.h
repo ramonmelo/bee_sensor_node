@@ -10,7 +10,8 @@ class SensorDallas : public Sensor
 {
 	public:
 		SensorDallas(OneWire *onewire);
-		int service(long data, int index);
+		int service(int index);
+		int devices();
 	private:
 		OneWire oneWire;
 		DallasTemperature manager;

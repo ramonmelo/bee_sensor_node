@@ -6,6 +6,7 @@ class Sensor
 {
 public:
 	Sensor();
-	virtual int service(long data, int index) = 0;
+	virtual int service(int index) = 0;
+	virtual int devices() = 0;
 };
 } // namespace InovaBee
