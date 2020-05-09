@@ -25,18 +25,21 @@
 //915E6 for North America
 #define BAND 915E6
 
+#define SEND_DELAY 1000 * 60 // 60 secs
+
 // Sensors
 
 byte *buffer;
+size_t length = 0;
 OneWire oneWire(ONE_WIRE);
 std::vector<InovaBee::Sensor *> sensors;
 
-void sendData()
+void sendData(byte *data, int size)
 {
 	//Send LoRa packet to receiver
 	if (LoRa.beginPacket())
 	{
-		LoRa.write(buffer, 4);
+		LoRa.write(data, size);
 		LoRa.endPacket();
 	}
 }
@@ -52,12 +55,11 @@ void setup()
 	sensors.push_back(new InovaBee::SensorDHT(DHT_PIN));
 
 	// Init buffer
-	byte total = 0;
 	for (unsigned int i = 0; i < sensors.size(); ++i)
 	{
-		total += sensors.at(i)->devices();
+		length += sensors.at(i)->devices();
 	}
-	buffer = new byte[total];
+	buffer = new byte[length];
 
 	//SPI LoRa pins
 	SPI.begin(SCK, MISO, MOSI, SS);
@@ -92,7 +94,7 @@ void write(byte *buffer, int i, int value)
 		value = -127;
 	}
 
-	byte signal = value <= 0 ? 128 : 0; // if negative, signal on the last bit
+	byte signal = value <= 0 ? 0x80 : 0x00; // if negative, signal on the last bit
 
 	if (value <= 0) // if negative
 	{
@@ -109,8 +111,14 @@ void serviceSensor()
 	Serial.println(millis());
 #endif
 
-	int position = 0;
+	// Clear buffer
+	for (size_t i = 0; i < length; i++)
+	{
+		buffer[i] = 0;
+	}
 
+	// Write data
+	int position = 0;
 	for (size_t i = 0; i < sensors.size(); ++i)
 	{
 		int devices = sensors.at(i)->devices();
@@ -120,17 +128,16 @@ void serviceSensor()
 			int value = sensors.at(i)->service(j); // get value from sensor
 
 			write(buffer, position, value); // write to buffer
-			position++; // advance current position
+			position++;						// advance current position
 		}
 	}
+
+	// Send data
+	sendData(buffer, length);
 }
 
 void loop()
 {
 	serviceSensor();
-
-	// Serial.print("Sending packet: ");
-	// Serial.println(counter);
-
-	delay(10000);
+	delay(SEND_DELAY);
 }
