@@ -141,8 +141,20 @@ void serviceSensor()
 	sendData(buffer, length);
 }
 
+void fakeSensor()
+{
+	byte *buffer = new byte[3];
+
+	buffer[0] = 1;
+	buffer[1] = 2;
+	buffer[2] = 3;
+
+	sendData(buffer, 3);
+}
+
 void loop()
 {
-	serviceSensor();
+	fakeSensor();
+	// serviceSensor();
 	delay(SEND_DELAY);
 }
