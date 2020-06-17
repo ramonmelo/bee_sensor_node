@@ -25,7 +25,9 @@
 //915E6 for North America
 #define BAND 915E6
 
-#define SEND_DELAY 1000 * 60 // 60 secs
+#define SEND_DELAY 1000 * 10
+
+#define SENSOR_ID "d91a8f16-4aa9-4d1b-8983-38cf1995afe2"
 
 // Sensors
 
@@ -39,6 +41,7 @@ void sendData(byte *data, int size)
 	//Send LoRa packet to receiver
 	if (LoRa.beginPacket())
 	{
+		LoRa.print(SENSOR_ID);
 		LoRa.write(data, size);
 		LoRa.endPacket();
 	}
