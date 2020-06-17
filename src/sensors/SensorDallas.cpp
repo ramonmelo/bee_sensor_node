@@ -39,18 +39,6 @@ namespace InovaBee
 			return temperature;
 		}
 
-		// 		for (int i = 0; i < sensor_count; ++i)
-		// 		{
-		// 			long temperature = (long)manager.getTempCByIndex(i);
-
-		// #if DEBUG
-		// 			Serial.print("Temperature ");
-		// 			Serial.print(i);
-		// 			Serial.print(": ");
-		// 			Serial.println(temperature);
-		// #endif
-		// 		}
-
 		return 0;
 	}
 } // namespace InovaBee
