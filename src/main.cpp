@@ -61,6 +61,11 @@ void setup()
 	}
 	buffer = new byte[length];
 
+#if DEBUG
+	Serial.print("Starting buffer with length: ");
+	Serial.println(length);
+#endif
+
 	//SPI LoRa pins
 	SPI.begin(SCK, MISO, MOSI, SS);
 	//setup LoRa transceiver module
