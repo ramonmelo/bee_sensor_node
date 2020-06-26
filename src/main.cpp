@@ -9,7 +9,7 @@
 #include <sensors/SensorDallas.h>
 #include <sensors/SensorDHT.h>
 
-#define ONE_WIRE 22
+#define ONE_WIRE 13
 #define DHT_PIN 17
 
 //define the pins used by the LoRa transceiver module
@@ -27,7 +27,7 @@
 
 #define SEND_DELAY 1000 * 10
 
-#define SENSOR_ID "d91a8f16-4aa9-4d1b-8983-38cf1995afe2"
+#define SENSOR_ID "AAA0001"
 
 // Sensors
 
@@ -44,6 +44,10 @@ void sendData(byte *data, int size)
 		LoRa.print(SENSOR_ID);
 		LoRa.write(data, size);
 		LoRa.endPacket();
+
+#if DEBUG
+		Serial.println("Data Sent...");
+#endif
 	}
 }
 
@@ -162,7 +166,7 @@ void fakeSensor()
 
 void loop()
 {
-	fakeSensor();
-	// serviceSensor();
+	// fakeSensor();
+	serviceSensor();
 	delay(SEND_DELAY);
 }
