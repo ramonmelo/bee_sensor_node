@@ -1,5 +1,7 @@
 #include "Arduino.h"
 
+#include <WiFi.h>
+
 //Libraries for LoRa
 #include <SPI.h>
 #include <LoRa.h>
@@ -25,9 +27,16 @@
 //915E6 for North America
 #define BAND 915E6
 
-#define SEND_DELAY 1000 * 10
+#define SEND_DELAY 1000 * 2
 
 #define SENSOR_ID "AAA0001"
+
+#define uS_TO_S_FACTOR 1000000 /* Conversion factor for micro seconds to seconds */
+#define TIME_TO_SLEEP 60	   /* Time ESP32 will go to sleep (in seconds) */
+
+bool serviceSensor();
+void sendData(byte *data, int size);
+void write(byte *buffer, int i, int value);
 
 // Sensors
 
@@ -36,25 +45,17 @@ size_t length = 0;
 OneWire oneWire(ONE_WIRE);
 std::vector<InovaBee::Sensor *> sensors;
 
-void sendData(byte *data, int size)
-{
-	//Send LoRa packet to receiver
-	if (LoRa.beginPacket())
-	{
-		LoRa.print(SENSOR_ID);
-		LoRa.write(data, size);
-		LoRa.endPacket();
-
-#if DEBUG
-		Serial.println("Data Sent...");
-#endif
-	}
-}
-
 void setup()
 {
+	WiFi.mode(WIFI_MODE_NULL);
+	btStop();
+
+	delay(1000);
+
 #if DEBUG
 	Serial.begin(115200);
+	delay(1000); //Take some time to open up the Serial Monitor
+
 	Serial.println("InovaBee");
 #endif
 
@@ -83,16 +84,30 @@ void setup()
 #if DEBUG
 		Serial.println("Starting LoRa failed!");
 #endif
-		while (1)
-		{
-			// do nothing
-		}
+		
+		// If LoRa was not enabled, we restart
+		ESP.restart();
 	}
 #if DEBUG
 	Serial.println("LoRa Initializing OK!");
 #endif
 
-	delay(2000);
+	int tries = 10;
+	// Send Data
+	while (serviceSensor() == false)
+	{
+		tries--;
+
+		if (tries < 0)
+		{
+			break;
+		}
+
+		delay(SEND_DELAY);
+	}
+
+	// Start Deep Sleep
+	ESP.deepSleep(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 }
 
 void write(byte *buffer, int i, int value)
@@ -121,7 +136,7 @@ void write(byte *buffer, int i, int value)
 #endif
 }
 
-void serviceSensor()
+bool serviceSensor()
 {
 #if DEBUG
 	Serial.print("Current time: ");
@@ -142,7 +157,11 @@ void serviceSensor()
 
 		for (size_t j = 0; j < devices; j++)
 		{
-			int value = sensors.at(i)->service(j); // get value from sensor
+			int value = 0;
+			if (sensors.at(i)->service(j, value) == false)
+			{
+				return false;
+			}
 
 			write(buffer, position, value); // write to buffer
 			position++;						// advance current position
@@ -151,22 +170,25 @@ void serviceSensor()
 
 	// Send data
 	sendData(buffer, length);
+	return true;
 }
 
-void fakeSensor()
+void sendData(byte *data, int size)
 {
-	byte *buffer = new byte[3];
+	//Send LoRa packet to receiver
+	if (LoRa.beginPacket())
+	{
+		LoRa.print(SENSOR_ID);
+		LoRa.write(data, size);
+		LoRa.endPacket();
 
-	buffer[0] = 1;
-	buffer[1] = 2;
-	buffer[2] = 3;
-
-	sendData(buffer, 3);
+#if DEBUG
+		Serial.println("Data Sent...");
+#endif
+	}
 }
 
 void loop()
 {
-	// fakeSensor();
-	serviceSensor();
-	delay(SEND_DELAY);
+	// EMPTY
 }

@@ -12,7 +12,7 @@ namespace InovaBee
 		return 1;
 	}
 
-	int SensorDallas::service(int index)
+	bool SensorDallas::service(int index, int &value)
 	{
 		if (sensor_count == 0)
 		{
@@ -36,9 +36,11 @@ namespace InovaBee
 			Serial.println(temperature);
 #endif
 
-			return temperature;
+			value = temperature;
+			return true;
 		}
 
-		return 0;
+		value = 0;
+		return false;
 	}
 } // namespace InovaBee

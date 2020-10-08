@@ -58,7 +58,7 @@ namespace InovaBee
 		return 2;
 	}
 
-	int SensorDHT::service(int index)
+	bool SensorDHT::service(int index, int &value)
 	{
 		sensors_event_t event;
 		if (index == 0)
@@ -79,7 +79,8 @@ namespace InovaBee
 				Serial.println(F("°C"));
 #endif
 
-				return event.temperature;
+				value = event.temperature;
+				return true;
 			}
 		}
 
@@ -102,11 +103,13 @@ namespace InovaBee
 				Serial.println(F("%"));
 #endif
 
-				return event.relative_humidity;
+				value = event.relative_humidity;
+				return true;
 			}
 		}
 
-		return 0;
+		value = 0;
+		return false;
 	}
 
 } // namespace InovaBee

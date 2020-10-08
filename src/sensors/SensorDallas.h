@@ -10,7 +10,7 @@ class SensorDallas : public Sensor
 {
 	public:
 		SensorDallas(OneWire *onewire);
-		int service(int index);
+		bool service(int index, int &value);
 		int devices();
 	private:
 		OneWire oneWire;

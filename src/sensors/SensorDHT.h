@@ -11,7 +11,7 @@ class SensorDHT : public Sensor
 {
 public:
 	SensorDHT(int pin);
-	int service(int index);
+	bool service(int index, int &value);
 	int devices();
 
 private:
